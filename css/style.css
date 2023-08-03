@@ -136,9 +136,9 @@ td:hover {
     color: black;
 }
 
-.cell.mine {
+/* .cell.mine {
     background: #000;
-}
+} */
 
 cell.expanded {
     background: #fff;

@@ -25,7 +25,7 @@ var gBoard;
 function onInit() {
     gBoard = buildBoard();
     renderBoard(gBoard);
-    onLevelSelected(4, 3);
+    onLevelSelected(8, 12);
 
 }
 
