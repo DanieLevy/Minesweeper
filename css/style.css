@@ -26,7 +26,6 @@ body {
     width: 550px;
 }
 
-/* Typography */
 h1 {
     font-size: 24px;
     margin-bottom: 10px;
@@ -54,7 +53,6 @@ h2 {
     border-radius: 5px;
 }
 
-/* Radio button styles */
 .game-level label {
     font-size: 10px;
     font-weight: bold;
@@ -81,11 +79,6 @@ h2 {
     padding: 10px;
     cursor: pointer;
     transition: transform 0.5s ease;
-}
-
-.game-level input[type="radio"]:checked + label {
-    background: rgb(225, 0, 0);
-    color: rgb(254, 0, 0);
 }
 
 .heart-icon {
@@ -136,11 +129,7 @@ td:hover {
     color: black;
 }
 
-/* .cell.mine {
-    background: #000;
-} */
-
-cell.expanded {
+.cell.expanded {
     background: #fff;
 }
 

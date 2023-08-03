@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-const MINE = '💣';
-const FLAG = '🚩';
-const EMPTY = '';
+const MINE = '💣'
+const FLAG = '🚩'
+const EMPTY = ''
 
 document.addEventListener('contextmenu', event => event.preventDefault());
 
@@ -16,6 +16,7 @@ var gGame = {
     shownCount: 0,
     markedCount: 0,
     secsPassed: 0,
+    score: 0,
     lives: 3,
     gTimer: null
 };
@@ -23,9 +24,10 @@ var gGame = {
 var gBoard;
 
 function onInit() {
-    gBoard = buildBoard();
-    renderBoard(gBoard);
-    onLevelSelected(8, 12);
+    gBoard = buildBoard()
+    renderBoard(gBoard)
+    onLevelSelected(4, 3)
+    updateBestScore()
 
 }
 
@@ -84,7 +86,7 @@ function checkWin() {
     var totalMines = gLevel.MINES
     var minesCounter = minesCount()
 
-    if (shownCells + markedCells === totalCells && minesCounter === totalMines) {
+    if (minesCounter === markedCells && shownCells === totalCells - totalMines) {
         // WIN
         gGame.isOn = false
 
@@ -114,7 +116,8 @@ function checkWin() {
             elFlags[i].innerText = FLAG
         }
 
-        showModal('You Won!', 'You are a true Minesweeper!')
+        // SCORE
+        // check if new record and update using updateBestScore()
     }
 }
 
@@ -126,6 +129,11 @@ function startGame() {
     gGame.shownCount = 0
     gGame.markedCount = 0
     gGame.secsPassed = 0
+
+    // SCORE
+    gGame.score = gLevel.MINES
+    var elScore = document.querySelector('.mines-count')
+    elScore.innerText = `Mines: ${gGame.score}`
 
     // SMILEY
     var elSmiley = document.querySelector('.smiley')
@@ -179,7 +187,20 @@ function gameOver() {
         elFlags[i].innerText = FLAG
     }
 
-    showModal('Game Over', 'You lost the game!')
+    // SCORE
+    var currScore = calcFinalScore()
+    var bestScore = localStorage.getItem('bestScore')
+    if (!bestScore || currScore < bestScore) {
+        localStorage.setItem('bestScore', currScore)
+        bestScore = currScore
+
+        showModal('New Record!', `Your score is: ${currScore} 
+                  <br> Best score is: ${bestScore}`)
+    } else {
+        showModal('Game Over!', `Your score is: ${currScore}`)
+    }
+
+    updateBestScore()
 }
 
 function onRestartGame() {
@@ -213,6 +234,11 @@ function onRestartGame() {
     elBoard.innerHTML = '';
     gBoard = buildBoard();
     renderBoard(gBoard);
+
+    // RESET SCORE
+    gGame.score = gLevel.MINES
+    var elScore = document.querySelector('.mines-count')
+    elScore.innerText = `Mines: ${gGame.score}`
 }
 
 function onLevelSelected(SIZE, MINES) {
@@ -269,6 +295,9 @@ function onCellClicked(elCell, i, j) {
         // gLives--
         gGame.lives--
 
+        // isShown
+        currCell.isShown = true
+
         // LIVES
         var heart = document.getElementById(`heart${gGame.lives + 1}`)
         heart.style.display = 'none'
@@ -315,11 +344,20 @@ function onCellMarked(elCell) {
         elCell.classList.remove('marked')
         elCell.innerText = EMPTY
         gGame.markedCount--
+        gGame.score++
+        var elScore = document.querySelector('.mines-count')
+        elScore.innerText = `Mines: ${gGame.score}`
+
     } else {
+
         currCell.isMarked = true
         elCell.classList.add('marked')
         elCell.innerText = FLAG
         gGame.markedCount++
+        if (gGame.score > 0)
+            gGame.score--
+        var elScore = document.querySelector('.mines-count')
+        elScore.innerText = `Mines: ${gGame.score}`
     }
     checkWin()
 }
@@ -328,30 +366,32 @@ function fullExpandShow(board, i, j) {
     var cell = board[i][j];
     if (cell.isShown || cell.isMarked || cell.isMine || cell.isExpanded) return;
 
-    if (cell.minesAroundCount > 0) {
+    if (cell.minesAroundCount === 0) {
         cell.isShown = true;
-        gGame.shownCount++;
+        cell.isExpanded = true;
+        gGame.revealedNonMineCount++; // Increment for each non-mine cell revealed
+        var elCell = document.querySelector(`[data-i="${i}"][data-j="${j}"]`);
+        elCell.classList.add('shown');
+
+        for (var k = i - 1; k <= i + 1; k++) {
+            if (k < 0 || k >= board.length) continue;
+            for (var l = j - 1; l <= j + 1; l++) {
+                if (l < 0 || l >= board[0].length) continue;
+                if (k === i && l === j) continue;
+                fullExpandShow(board, k, l);
+            }
+        }
+    } else if (!cell.isShown) {
+        // For cells with mines around, show the cell without full expansion
+        cell.isShown = true;
+        gGame.revealedNonMineCount++; // Increment for each non-mine cell revealed
         var elCell = document.querySelector(`[data-i="${i}"][data-j="${j}"]`);
         elCell.classList.add('shown');
         elCell.innerText = cell.minesAroundCount;
         setCellColor(elCell, cell.minesAroundCount);
-        return;
-    }
-
-    cell.isShown = true;
-    cell.isExpanded = true;
-    gGame.shownCount++;
-    var elCell = document.querySelector(`[data-i="${i}"][data-j="${j}"]`);
-    elCell.classList.add('shown');
-    for (var k = i - 1; k <= i + 1; k++) {
-        if (k < 0 || k >= board.length) continue;
-        for (var l = j - 1; l <= j + 1; l++) {
-            if (l < 0 || l >= board[0].length) continue;
-            if (k === i && l === j) continue;
-            fullExpandShow(board, k, l);
-        }
     }
 }
+
 
 function setMinesNegsCount(board, pos) {
     var minesAroundCount = 0;
@@ -414,10 +454,20 @@ function showModal(title, info) {
     var modalInfo = document.getElementById('modal-info')
 
     modalTitle.innerText = title
-    modalInfo.innerText = info
+    modalInfo.innerHTML = info
 
     modal.style.display = 'block'
 }
+
+// var modal = document.getElementById('modal')
+// var modalTitle = document.getElementById('modal-title')
+// var modalInfo = document.getElementById('modal-info')
+
+// modalTitle.innerText = title
+// modalInfo.innerText = info
+
+// modal.style.display = 'block'
+// }
 
 function hideModal() {
     var modal = document.getElementById('modal')
@@ -464,4 +514,14 @@ function setCellColor(elCell, count) {
             break;
     }
     elCell.style.color = color;
+}
+
+function calcFinalScore() {
+    var score = gLevel.SIZE * gLevel.SIZE - gLevel.MINES + gGame.secsPassed
+    return score
+}
+
+function updateBestScore() {
+    const el = document.querySelector('#best-score');
+    el.innerText = `Best Score: ${localStorage.getItem('bestScore')}`;
 }
