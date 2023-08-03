@@ -1,20 +1,72 @@
 <!-- MineSweeper game -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>MineSweeper</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body onload="onInit()">
-<h1>MineSweeper</h1>
-<button class="btn" onclick="startGame()">Start</button>
-<table class="board">
-    <tbody>
-    </tbody>
-</table>
-    <script src="js/main.js"></script>
+    <div class="game-container ">
+        <h1>MineSweeper</h1>
+
+        <!-- GAME LEVEL -->
+
+        <h2>Choose Level</h2>
+        <div class="game-level">
+            <label>
+                <input type="radio" name="level" value="easy" onclick="onLevelSelected(4, 3)">
+                Easy <span class="level-span">4x4 <br><br>3 Mines</span>
+            </label>
+            <label>
+                <input type="radio" name="level" value="medium" onclick="onLevelSelected(8, 12)" checked>
+                Medium <span class="level-span">8x12 <br><br>12 Mines</span>
+            </label>
+            <label>
+                <input type="radio" name="level" value="hard" onclick="onLevelSelected(12, 30)">
+                Hard <span class="level-span">12x30 <br><br>30 Mines</span>
+            </label>
+        </div>
+
+        <!-- GAME INFO -->
+        <span class="smiley">😀</span>
+
+        <div class="game-info">
+            <span class="timer">TIME: 00</span>
+            <span class="lives-count">
+                <div> LIVES:
+                <img src="img/heart.png" alt="Life" class="heart-icon" id="heart1">
+                <img src="img/heart.png" alt="Life" class="heart-icon" id="heart2">
+                <img src="img/heart.png" alt="Life" class="heart-icon" id="heart3">
+            </div>
+            </span> 
+            <span class="mines-count">SCORE: 0</span>   
+        </div>
+        
+        
+        <!-- MODAL -->
+
+        <div class="modal" id="modal">
+            <div class="modal-content">
+                <h2 id="modal-title">Game Over</h2>
+                <p id="modal-info">You lost the game!</p>
+                <button id="modal-restart" onclick="onRestartGame()">Restart</button>
+            </div>
+        </div>
+        
+        <!-- BOARD -->
+
+        <div class="board-container">
+            <table class="board">
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <script src="js/main.js"></script>
+        <footer>DANIEL LEVY</footer>
 </body>
-<footer>DANIEL LEVY</footer>
+
 </html>
